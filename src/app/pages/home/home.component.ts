@@ -1,4 +1,6 @@
+import { AuthenticatorComponent } from './../../tools/authenticator/authenticator.component';
 import { Component, OnInit } from '@angular/core';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
 
 @Component({
   selector: 'app-home',
@@ -7,9 +9,14 @@ import { Component, OnInit } from '@angular/core';
 })
 export class HomeComponent implements OnInit {
 
-  constructor() { }
+  constructor(private loginSheet:MatBottomSheet ) { }
 
   ngOnInit(): void {
+  }
+
+  onGetStartedClick(){
+    
+    this.loginSheet.open(AuthenticatorComponent);
   }
 
 }
