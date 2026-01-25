@@ -7,15 +7,25 @@ import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { FirebaseTSApp } from 'firebasets/firebasetsApp/firebaseTSApp';
+import { HomeComponent } from './pages/home/home.component';
+
+import { MatButtonModule } from '@angular/material/button';
+import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
+import { MatCardModule } from '@angular/material/card';
+
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    HomeComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
-    BrowserAnimationsModule
+    BrowserAnimationsModule,
+    MatButtonModule,
+    MatBottomSheetModule,
+    MatCardModule
   ],
   providers: [],
   bootstrap: [AppComponent]
