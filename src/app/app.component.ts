@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { AuthenticatorComponent } from './tools/authenticator/authenticator.component';
+import { FirebaseTSAuth } from 'firebasets/firebasetsAuth/firebaseTSAuth'; 
 
 
 @Component({
@@ -10,10 +11,45 @@ import { AuthenticatorComponent } from './tools/authenticator/authenticator.comp
 })
 export class AppComponent {
   title = 'social-media-site';
+  auth = new FirebaseTSAuth();
+  isLoggedIn = false;
 
-  constructor(private loginSheet: MatBottomSheet){}
+  constructor(private loginSheet: MatBottomSheet){
+    this.auth.listenToSignInStateChanges(
+      user => {
+        this.auth.checkSignInState(
+          {
+            whenSignedIn: user => {
+              alert("Logged in");
+              this.isLoggedIn = true;
+            },
+            whenSignedOut: user => {
+              alert("Logged out");
+            },
+            whenSignedInAndEmailNotVerified: user => {
+              
+            },
+            whenSignedInAndEmailVerified: user => {
+              
+            },
+            whenChanged: user => {
 
-  onGetStartedClick(){
+            }
+          }
+        );
+      }
+    );    
+  }
+
+  onLogoutClick(){
+    this.auth.signOut();
+  }
+
+  loggedIn(){
+    return this.auth.isSignedIn();
+  }
+
+  onLoginClick(){
     this.loginSheet.open(AuthenticatorComponent);
   }
 }

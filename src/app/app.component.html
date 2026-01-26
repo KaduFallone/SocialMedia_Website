@@ -4,9 +4,8 @@
       <div style="font-size: 1.5em "calss="nav-bar-content">Sellentt</div>
     </div>
     <div id="nav-bar-right">
-      <div 
-        (click)="onGetStartedClick()"
-        class="nav-bar-content">Login</div>
+      <div *ngIf="!loggedIn()" (click)="onLoginClick()" class="nav-bar-content">Login</div>
+      <div *ngIf="loggedIn()" (click)="onLogoutClick()" class="nav-bar-item">Logout</div>
     </div>
   </div>
 </div>
