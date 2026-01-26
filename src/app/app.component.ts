@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { AuthenticatorComponent } from './tools/authenticator/authenticator.component';
 import { FirebaseTSAuth } from 'firebasets/firebasetsAuth/firebaseTSAuth'; 
+import { Component, NgZone } from '@angular/core';
+import { Router } from '@angular/router';
 
 
 @Component({
@@ -14,32 +15,42 @@ export class AppComponent {
   auth = new FirebaseTSAuth();
   isLoggedIn = false;
 
-  constructor(private loginSheet: MatBottomSheet){
-    this.auth.listenToSignInStateChanges(
-      user => {
-        this.auth.checkSignInState(
-          {
-            whenSignedIn: user => {
-              alert("Logged in");
-              this.isLoggedIn = true;
-            },
-            whenSignedOut: user => {
-              alert("Logged out");
-            },
-            whenSignedInAndEmailNotVerified: user => {
-              
-            },
-            whenSignedInAndEmailVerified: user => {
-              
-            },
-            whenChanged: user => {
-
-            }
-          }
-        );
-      }
-    );    
+  constructor(
+    private loginSheet: MatBottomSheet, 
+    private router: Router,
+    private zone: NgZone
+  ) {
+    this.auth.listenToSignInStateChanges(user => {
+      this.auth.checkSignInState({
+        whenSignedIn: user => {
+          console.log("LOG: Usuário logado detectado.");
+          this.verificarEredirecionar(user);
+        },
+        whenSignedOut: user => {
+          this.zone.run(() => this.router.navigate(["/"]));
+        },
+        whenSignedInAndEmailNotVerified: user => {
+          console.log("LOG: Email não verificado via firebasets.");
+          this.verificarEredirecionar(user);
+        },
+        whenSignedInAndEmailVerified: user => {
+          this.zone.run(() => this.router.navigate(["/"]));
+        }
+        // ... restolho dos estados
+      });
+    });
   }
+
+  // Função auxiliar para garantir que a navegação funcione
+  private verificarEredirecionar(user: any) {
+    if (!user?.emailVerified) {
+      console.log("LOG: Forçando navegação dentro da Zona do Angular...");
+      this.zone.run(() => {
+        this.router.navigate(["/emailVerification"]);
+      });
+    }
+  }
+
 
   onLogoutClick(){
     this.auth.signOut();
