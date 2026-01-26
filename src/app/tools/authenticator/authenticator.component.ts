@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { FirebaseTSAuth } from 'firebasets/firebasetsAuth/firebaseTSAuth';
 
 @Component({
   selector: 'app-authenticator',
@@ -9,9 +10,98 @@ export class AuthenticatorComponent implements OnInit {
 
   state = AuthenticatorCompState.LOGIN;
 
-  constructor() { }
+  firebaseTsAuth: FirebaseTSAuth;
+
+  constructor() {
+    this.firebaseTsAuth = new FirebaseTSAuth();
+   }
 
   ngOnInit(): void {
+  }
+
+  onResetClick(resetEmail: HTMLInputElement){
+    let email = resetEmail.value;
+    if(this.isNotEmpty(email)){
+      this.firebaseTsAuth.sendPasswordResetEmail(
+        {
+          email: email,
+          onComplete: (err) => {
+            alert(`reset de senha enviado para ${email}`)
+          }
+        }
+      );
+    }
+  }
+
+  onLogin(
+    loginEmail:HTMLInputElement ,
+    loginPassword:HTMLInputElement 
+  ){
+    let email = loginEmail.value;
+    let password = loginPassword.value;
+
+    if(this.isNotEmpty(email) &&
+        this.isNotEmpty(password)
+    ){
+      this.firebaseTsAuth.signInWith(
+        {
+          email: email,
+          password: password,
+          onComplete: (uc) => {
+            alert("Login feito com sucesso!")
+          },
+          onFail: (err) =>{
+            console.error(err);
+            alert("Falha no login: " + err);
+          }
+        }
+      )
+    }
+
+  }
+
+  onRegisterClick(
+    registerEmail: HTMLInputElement,
+    registerPassword:HTMLInputElement,
+    registerConfirmPassword:HTMLInputElement
+  ){
+    let email = registerEmail.value;
+    let password = registerPassword.value;
+    let confirmPassword = registerConfirmPassword.value;
+
+
+    if(
+      this.isNotEmpty(email) &&
+      this.isNotEmpty(password) &&
+      this.isNotEmpty(confirmPassword) &&
+      this.isAMatch(password, confirmPassword)
+    ){
+      this.firebaseTsAuth.createAccountWith(
+        {
+          email: email,
+          password: password,
+          onComplete: (uc) => {
+            alert("Conta criada com sucesso")
+            registerEmail.value = "";
+            registerPassword.value ="";
+            registerConfirmPassword.value = "";
+          },
+          onFail: (err) => {
+            console.error(err);
+            alert("Falha ao criar conta: " + err);
+          }
+        }
+      );
+    }
+  };
+    
+
+  isNotEmpty(text: string){
+    return text != null && text.length > 0; 
+  }
+
+  isAMatch(text:string, comparedWith: string){
+    return text == comparedWith;
   }
 
   onForgotPasswordClick(){
