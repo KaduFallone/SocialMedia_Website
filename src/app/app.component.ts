@@ -1,9 +1,10 @@
+import { toPublicName } from '@angular/compiler/src/i18n/serializers/xmb';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { AuthenticatorComponent } from './tools/authenticator/authenticator.component';
 import { FirebaseTSAuth } from 'firebasets/firebasetsAuth/firebaseTSAuth'; 
 import { Component, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
-
+import { FirebaseTSFirestore } from 'firebasets/firebasetsFirestore/firebaseTSFirestore';
 
 @Component({
   selector: 'app-root',
@@ -13,6 +14,10 @@ import { Router } from '@angular/router';
 export class AppComponent {
   title = 'social-media-site';
   auth = new FirebaseTSAuth();
+  firestore = new FirebaseTSFirestore();
+  userHasProfile = false;
+  userDocument?: UserDocument;
+
   isLoggedIn = false;
 
   constructor(
@@ -34,9 +39,12 @@ export class AppComponent {
           this.verificarEredirecionar(user);
         },
         whenSignedInAndEmailVerified: user => {
+          this.getUserProfile();
           this.zone.run(() => this.router.navigate(["/"]));
+        },
+        whenChanged: user => {
+
         }
-        // ... restolho dos estados
       });
     });
   }
@@ -51,6 +59,21 @@ export class AppComponent {
     }
   }
 
+  getUserProfile(){
+    this.firestore.listenToDocument(
+      {
+        name: "Getting Document" ,
+        path: ["Users", this.auth.getAuth().currentUser!.uid],
+        onUpdate: (result) => {
+          this.zone.run(() => { 
+            this.userDocument = <UserDocument>result.data();
+            this.userHasProfile = result.exists;
+            console.log("LOG: Perfil existe? ", this.userHasProfile);
+          });
+        }
+      }
+    );
+  }
 
   onLogoutClick(){
     this.auth.signOut();
@@ -63,4 +86,9 @@ export class AppComponent {
   onLoginClick(){
     this.loginSheet.open(AuthenticatorComponent);
   }
+}
+
+export interface UserDocument{
+  publicName: string;
+  description: string;
 }
