@@ -1,3 +1,6 @@
+<div style="background: yellow; color: black; padding: 10px; position: fixed; bottom: 0; z-index: 9999;">
+  Logado: {{isLoggedIn}} | Tem Perfil: {{userHasProfile}}
+</div>
 <div id="nav-bar">
   <div id="nav-bar-content">
     <div id="nav-bar-left">
@@ -13,6 +16,15 @@
   </div>
 </div>
 
-<router-outlet></router-outlet>
+<div *ngIf="isLoggedIn && isCheckingProfile" class="loading-screen" style="text-align: center; margin-top: 100px;">
+  <mat-icon class="spinning">sync</mat-icon>
+  <p>Carregando perfil do Sellentt...</p>
+  <p>Caso demore carregar, de refresh na pagina</p>
+  <p>(Não costuma passar de 5 segundos)</p>
+</div>
 
-<app-profile [show]="loggedIn() && !userHasProfile"></app-profile>
+<app-profile *ngIf="isLoggedIn && !isCheckingProfile && !userHasProfile" [show]="true"></app-profile>
+
+<div *ngIf="!isLoggedIn || (isLoggedIn && !isCheckingProfile && userHasProfile)">
+  <router-outlet></router-outlet>
+</div>

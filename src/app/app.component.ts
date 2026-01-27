@@ -17,8 +17,8 @@ export class AppComponent {
   firestore = new FirebaseTSFirestore();
   userHasProfile = false;
   userDocument?: UserDocument;
-
   isLoggedIn = false;
+  isCheckingProfile = true;
 
   constructor(
     private loginSheet: MatBottomSheet, 
@@ -32,15 +32,25 @@ export class AppComponent {
           this.verificarEredirecionar(user);
         },
         whenSignedOut: user => {
-          this.zone.run(() => this.router.navigate(["/"]));
+          this.zone.run(() => {
+            console.log("LOG: Usuário deslogado. Limpando estados...");
+            this.isLoggedIn = false;
+            this.userHasProfile = false;
+            this.userDocument = undefined;
+            this.isCheckingProfile = false;
+            this.router.navigate(["/"]);
+          });
         },
         whenSignedInAndEmailNotVerified: user => {
           console.log("LOG: Email não verificado via firebasets.");
           this.verificarEredirecionar(user);
         },
         whenSignedInAndEmailVerified: user => {
-          this.getUserProfile();
-          this.zone.run(() => this.router.navigate(["/"]));
+          this.zone.run(() => {
+            this.isLoggedIn = true;
+            this.isCheckingProfile = true; 
+            this.getUserProfile();
+          });
         },
         whenChanged: user => {
 
@@ -60,15 +70,33 @@ export class AppComponent {
   }
 
   getUserProfile(){
+    const user = this.auth.getAuth().currentUser;
+
+    if(!user){
+      this.zone.run(() =>{
+        this.isCheckingProfile = false;
+        this.isLoggedIn = false;
+      });
+      return;
+    }
+
+    this.isCheckingProfile = true;
+
     this.firestore.listenToDocument(
       {
         name: "Getting Document" ,
-        path: ["Users", this.auth.getAuth().currentUser!.uid],
+        path: ["Users", user.uid],
         onUpdate: (result) => {
           this.zone.run(() => { 
-            this.userDocument = <UserDocument>result.data();
             this.userHasProfile = result.exists;
             console.log("LOG: Perfil existe? ", this.userHasProfile);
+            this.userDocument = <UserDocument>result.data();
+            this.isCheckingProfile = false;
+
+            if(this.userHasProfile){
+              console.log("LOG: Redirecionado para PostFeed...");
+              this.router.navigate(["/postfeed"]);
+            }
           });
         }
       }
@@ -76,7 +104,13 @@ export class AppComponent {
   }
 
   onLogoutClick(){
-    this.auth.signOut();
+    this.auth.signOut().then(() => {
+      this.zone.run(() => {
+        this.isLoggedIn = false;
+        this.userHasProfile = false;
+        this.router.navigate(["/"]);
+      });
+    });
   }
 
   loggedIn(){
