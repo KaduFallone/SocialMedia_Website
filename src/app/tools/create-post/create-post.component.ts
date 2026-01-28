@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { FirebaseTSAuth } from 'firebasets/firebasetsAuth/firebaseTSAuth';
 import { FirebaseTSFirestore } from 'firebasets/firebasetsFirestore/firebaseTSFirestore';
 import { FirebaseTSStorage } from   'firebasets/firebasetsStorage/firebaseTSStorage'
+import { FirebaseTSApp } from 'firebasets/firebasetsApp/firebaseTSApp';
+import { MatDialogRef } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-create-post',
@@ -9,19 +11,30 @@ import { FirebaseTSStorage } from   'firebasets/firebasetsStorage/firebaseTSStor
   styleUrls: ['./create-post.component.css']
 })
 export class CreatePostComponent implements OnInit {
-  auth= new FirebaseTSAuth;
-  firestore = new FirebaseTSFirestore;
-  storage = new FirebaseTSStorage;
+  auth= new FirebaseTSAuth();
+  firestore = new FirebaseTSFirestore();
+  storage = new FirebaseTSStorage();
+
   selectedImageFile?: File;
   imageSrc?: string;
 
-  constructor() { }
+  constructor(private dialog: MatDialogRef<CreatePostComponent>) { }
 
   ngOnInit(): void {
   }
 
   onPostClick(commentInput: HTMLTextAreaElement){
     let comment = commentInput.value;
+    if (comment.length <= 0 ) return;
+    if(this.selectedImageFile){
+      this.upLoadImagePost(comment);
+    }
+    else{
+      this.uploadPost(comment);
+    }
+  }
+
+  upLoadImagePost(comment: string){
     let postId = this.firestore.genDocId();
     this.storage.upload(
       {
@@ -31,10 +44,39 @@ export class CreatePostComponent implements OnInit {
           data: this.selectedImageFile
         },
         onComplete: (dowloadUrl) => {
-          alert(dowloadUrl);
+          this.firestore.create(
+            {
+              path: ["Post", postId],
+              data:{
+                comment:comment,
+                creatorId: this.auth.getAuth().currentUser!.uid,
+                imageURL: dowloadUrl,
+                timeStamp:  FirebaseTSApp.getFirestoreTimestamp()
+              },
+              onComplete: (docId) => {
+                this.dialog.close();
+              }
+            }
+          );
+        },
+      }
+    );
+  }
+
+  uploadPost(comment: string){
+    this.firestore.create(
+      {
+        path: ["Post"],
+        data:{
+          comment:comment,
+          creatorId: this.auth.getAuth().currentUser!.uid,
+          timeStamp:  FirebaseTSApp.getFirestoreTimestamp()
+        },
+        onComplete: (docId) => {
+          this.dialog.close();
         }
       }
-    )
+    );
   }
 
   onPhotoSelected(photoSelector: HTMLInputElement){
