@@ -20,6 +20,7 @@ import { EmailVerificationComponent } from './pages/email-verification/email-ver
 import { ProfileComponent } from './tools/profile/profile.component';
 import { PostFeedComponent } from './pages/post-feed/post-feed.component';
 import { CreatePostComponent } from './tools/create-post/create-post.component';
+import { PostComponent } from './tools/post/post.component';
 
 
 @NgModule({
@@ -30,7 +31,8 @@ import { CreatePostComponent } from './tools/create-post/create-post.component';
     EmailVerificationComponent,
     ProfileComponent,
     PostFeedComponent,
-    CreatePostComponent
+    CreatePostComponent,
+    PostComponent
   ],
   imports: [
     BrowserModule,
