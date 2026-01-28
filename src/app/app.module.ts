@@ -21,6 +21,7 @@ import { ProfileComponent } from './tools/profile/profile.component';
 import { PostFeedComponent } from './pages/post-feed/post-feed.component';
 import { CreatePostComponent } from './tools/create-post/create-post.component';
 import { PostComponent } from './tools/post/post.component';
+import { ReplyComponent } from './tools/reply/reply.component';
 
 
 @NgModule({
@@ -32,7 +33,8 @@ import { PostComponent } from './tools/post/post.component';
     ProfileComponent,
     PostFeedComponent,
     CreatePostComponent,
-    PostComponent
+    PostComponent,
+    ReplyComponent
   ],
   imports: [
     BrowserModule,
