@@ -16,7 +16,7 @@ export class AppComponent {
   auth = new FirebaseTSAuth();
   firestore = new FirebaseTSFirestore();
   userHasProfile = false;
-  userDocument?: UserDocument;
+  private static userDocument?: UserDocument;
   isLoggedIn = false;
   isCheckingProfile = true;
 
@@ -36,7 +36,7 @@ export class AppComponent {
             console.log("LOG: Usuário deslogado. Limpando estados...");
             this.isLoggedIn = false;
             this.userHasProfile = false;
-            this.userDocument = undefined;
+            AppComponent.userDocument = undefined;
             this.isCheckingProfile = false;
             this.router.navigate(["/"]);
           });
@@ -69,6 +69,14 @@ export class AppComponent {
     }
   }
 
+  public static getUserDocument(){
+    return AppComponent.userDocument;
+  }
+
+  getUserName(){
+      return AppComponent.userDocument?.publicName;
+  }
+
   getUserProfile(){
     const user = this.auth.getAuth().currentUser;
 
@@ -79,9 +87,9 @@ export class AppComponent {
       });
       return;
     }
-
+    
     this.isCheckingProfile = true;
-
+    
     this.firestore.listenToDocument(
       {
         name: "Getting Document" ,
@@ -89,8 +97,11 @@ export class AppComponent {
         onUpdate: (result) => {
           this.zone.run(() => { 
             this.userHasProfile = result.exists;
+            if(result.exists){
+              AppComponent.userDocument = <UserDocument>result.data();
+              AppComponent.userDocument.userId = user!.uid;
+            }
             console.log("LOG: Perfil existe? ", this.userHasProfile);
-            this.userDocument = <UserDocument>result.data();
             this.isCheckingProfile = false;
 
             if(this.userHasProfile){
@@ -125,4 +136,5 @@ export class AppComponent {
 export interface UserDocument{
   publicName: string;
   description: string;
+  userId: string
 }

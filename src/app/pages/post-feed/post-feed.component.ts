@@ -37,7 +37,9 @@ export class PostFeedComponent implements OnInit {
             this.posts = [];
             console.log("Documentos brutos no Firebase: ", result.docs.length);
             result.docs.forEach(doc => {
-              this.posts.push(<PostData>doc.data());
+              let post = <PostData>doc.data();
+              post.postId = doc.id
+              this.posts.push(post);
            });
           });
         },
@@ -54,4 +56,5 @@ export interface PostData{
   comment: string;
   creatorId: string;
   imageURL: string;
+  postId: string
 }
